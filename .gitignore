@@ -13,3 +13,7 @@ Icon?
 *~
 .vscode/
 .idea/
+
+# 本地测试缓存
+__pycache__/
+*.pyc
