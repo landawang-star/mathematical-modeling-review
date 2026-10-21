@@ -3,6 +3,7 @@
 
 import json
 import sys
+import importlib.util
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from pathlib import Path
 
@@ -14,6 +15,10 @@ WEIGHTS = {
     "clarity": Decimal(15),
     "compliance": Decimal(10),
 }
+
+_AWARD_SPEC = importlib.util.spec_from_file_location("award", Path(__file__).with_name("award.py"))
+award = importlib.util.module_from_spec(_AWARD_SPEC)
+_AWARD_SPEC.loader.exec_module(award)
 
 
 def calculate(payload):
@@ -39,13 +44,23 @@ def calculate(payload):
         scores[key] = score
 
     if missing:
-        return {"total": None, "unscored": missing, "note": "非官方诊断分；缺项不计算总分"}
+        return {
+            "total": None,
+            "forecast": None,
+            "interval": None,
+            "unscored": missing,
+            "note": "非官方诊断分；缺项不计算总分或奖项预测",
+        }
 
     total = sum((scores[key] / Decimal(20) * weight for key, weight in WEIGHTS.items()), Decimal(0))
+    rounded_total = total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    forecast = award.predict(rounded_total)
     return {
-        "total": float(total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+        "total": float(rounded_total),
+        "forecast": forecast["forecast"],
+        "interval": forecast["interval"],
         "unscored": [],
-        "note": "非官方诊断分；不对应竞赛奖项",
+        "note": "非官方诊断分与经验奖项预测；仅适用于五维均已评分的完整 CUMCM 评审",
     }
 
 

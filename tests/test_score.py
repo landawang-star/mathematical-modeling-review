@@ -24,6 +24,8 @@ class ScoreTests(unittest.TestCase):
             "compliance": 14,
         })
         self.assertEqual(result["total"], 81.75)
+        self.assertEqual(result["forecast"], "国二")
+        self.assertEqual(result["interval"], "国二至国一")
 
     def test_missing_evidence_prevents_total(self):
         result = score.calculate({
@@ -34,6 +36,7 @@ class ScoreTests(unittest.TestCase):
             "compliance": 14,
         })
         self.assertIsNone(result["total"])
+        self.assertIsNone(result["forecast"])
         self.assertEqual(result["unscored"], ["originality"])
 
     def test_out_of_range_is_rejected(self):
