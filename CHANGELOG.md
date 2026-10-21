@@ -1,5 +1,10 @@
 # 更新记录
 
+## 2026-10-21：仓库英文命名
+
+- GitHub 仓库从 `shuxue-jianmo-lunwen-pingshen` 更名为 `mathematical-modeling-review`，对应英文名称 Mathematical Modeling Review（数学建模评审）。
+- 更新 README 标题、部署命令及许可文件中的原始来源链接；Skill 的评分与评审逻辑没有变化。
+
 ## 2026-10-21：v2.8.0 评审后整改清单
 
 - 完整评审结束后新增独立的“论文与提案整改计划”：覆盖各题小问与跨章节问题，按影响标优先级，逐项写出位置、证据状态、影响、具体修改动作和完成标准。
