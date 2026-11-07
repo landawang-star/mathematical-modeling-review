@@ -21,7 +21,7 @@ def evaluate(rows):
         raise ValueError("benchmark must be a non-empty list")
     details = []
     for row in rows:
-        predicted = award.predict(row["score"])
+        predicted = award.predict(row["score"], row.get("originality"))
         actual_category = award.category_for(row["label"])
         details.append({
             "id": row["id"],
@@ -78,11 +78,13 @@ def evaluate(rows):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "benchmark", nargs="?", type=Path, default=ROOT / "validation" / "benchmark_v2.10.json"
+        "benchmark", nargs="?", type=Path, default=ROOT / "validation" / "benchmark_v2.11.json"
     )
     parser.add_argument("--gate", action="store_true")
-    parser.add_argument("--category-minimum", type=float, default=0.80)
-    parser.add_argument("--subtier-minimum", type=float, default=0.70)
+    parser.add_argument("--category-minimum", type=float, default=0.90)
+    parser.add_argument("--subtier-minimum", type=float, default=0.80)
+    parser.add_argument("--exact-minimum", type=float, default=0.80,
+                        help="端到端具体奖级最低命中率；不得用条件细分命中率代替")
     args = parser.parse_args()
     result = evaluate(json.loads(args.benchmark.read_text(encoding="utf-8")))
     print(json.dumps(result, ensure_ascii=False, indent=2))
@@ -92,6 +94,8 @@ def main():
             and result["first_stage_accuracy"] >= args.category_minimum
             and result["subtier_accuracy"] is not None
             and result["subtier_accuracy"] >= args.subtier_minimum
+            and result["end_to_end_subtier_accuracy"] is not None
+            and result["end_to_end_subtier_accuracy"] >= args.exact_minimum
         )
         if not passed:
             return 1

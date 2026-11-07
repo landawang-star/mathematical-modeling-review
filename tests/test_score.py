@@ -24,11 +24,13 @@ class ScoreTests(unittest.TestCase):
             "compliance": 14,
         })
         self.assertEqual(result["total"], 81.75)
-        self.assertEqual(result["forecast"], "国二")
-        self.assertEqual(result["category"], "国奖")
-        self.assertEqual(result["subtier"], "国二")
-        self.assertEqual(result["interval"], "省一至国一")
-        self.assertEqual(result["interval_tiers"], ["省一", "国二", "国一"])
+        self.assertEqual(result["forecast"], "省一")
+        self.assertEqual(result["category"], "省奖")
+        self.assertEqual(result["subtier"], "省一")
+        self.assertEqual(result["interval"], "省二至国二")
+        self.assertEqual(result["interval_tiers"], ["省二", "省一", "国二"])
+        self.assertFalse(result["national_tier_boundary"])
+        self.assertFalse(result["originality_gate"]["national_eligible"])
 
     def test_missing_evidence_prevents_total(self):
         result = score.calculate({
@@ -100,6 +102,19 @@ class ScoreTests(unittest.TestCase):
         for total, expected in cases:
             with self.subTest(total=total):
                 self.assertEqual(award.predict(total)["interval_tiers"], expected)
+
+    def test_national_boundary_requires_innovation_caveat(self):
+        boundary = award.predict(83.5)
+        self.assertTrue(boundary["national_tier_boundary"])
+        self.assertIn("低", boundary["subtier_confidence_hint"])
+        self.assertIn("独立验证", boundary["national_innovation_caveat"])
+        self.assertFalse(award.predict(80)["national_tier_boundary"])
+        self.assertIsNone(award.predict(70)["national_innovation_caveat"])
+
+    def test_national_route_requires_visible_originality(self):
+        self.assertEqual(award.predict(81.5, 16)["forecast"], "省一")
+        self.assertEqual(award.predict(81.5, 17)["forecast"], "国二")
+        self.assertEqual(award.predict(86, 16)["forecast"], "国一")
 
 
 if __name__ == "__main__":

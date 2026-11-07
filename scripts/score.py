@@ -57,7 +57,7 @@ def calculate(payload):
 
     total = sum((scores[key] / Decimal(20) * weight for key, weight in WEIGHTS.items()), Decimal(0))
     rounded_total = total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    forecast = award.predict(rounded_total)
+    forecast = award.predict(rounded_total, scores["originality"])
     return {
         "total": float(rounded_total),
         "category": forecast["category"],
@@ -65,6 +65,10 @@ def calculate(payload):
         "forecast": forecast["forecast"],
         "interval": forecast["interval"],
         "interval_tiers": forecast["interval_tiers"],
+        "national_tier_boundary": forecast["national_tier_boundary"],
+        "subtier_confidence_hint": forecast["subtier_confidence_hint"],
+        "national_innovation_caveat": forecast["national_innovation_caveat"],
+        "originality_gate": forecast["originality_gate"],
         "award_sentence": forecast["award_sentence"],
         "unscored": [],
         "note": "非官方诊断分与经验奖项预测；仅适用于五维均已评分的完整 CUMCM 评审",
