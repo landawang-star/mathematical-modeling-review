@@ -1,0 +1,17 @@
+[
+  {"id":"S01","score":76.50,"label":"省一","evidence":"author_claim"},
+  {"id":"S03","score":78.25,"label":"省一","evidence":"author_claim"},
+  {"id":"S04","score":81.50,"label":"省一","evidence":"author_claim"},
+  {"id":"S05","score":75.50,"label":"省一","evidence":"author_claim"},
+  {"id":"S06","score":75.75,"label":"省一","evidence":"author_claim"},
+  {"id":"S07","score":73.00,"label":"省二","evidence":"author_claim"},
+  {"id":"S09","score":71.00,"label":"省一","evidence":"author_claim"},
+  {"id":"S10","score":74.25,"label":"省一","evidence":"author_claim"},
+  {"id":"S12","score":80.50,"label":"国二","evidence":"author_claim"},
+  {"id":"S13","score":78.75,"label":"国二","evidence":"author_claim"},
+  {"id":"S14","score":76.00,"label":"省一","evidence":"author_claim"},
+  {"id":"S15","score":66.25,"label":"省一","evidence":"author_claim"},
+  {"id":"S16","score":78.00,"label":"国一","evidence":"author_claim"},
+  {"id":"S17","score":78.25,"label":"国二","evidence":"official_identity"},
+  {"id":"S18","score":69.00,"label":"省二","evidence":"author_claim"}
+]

@@ -25,7 +25,10 @@ class ScoreTests(unittest.TestCase):
         })
         self.assertEqual(result["total"], 81.75)
         self.assertEqual(result["forecast"], "国二")
-        self.assertEqual(result["interval"], "国二至国一")
+        self.assertEqual(result["category"], "国奖")
+        self.assertEqual(result["subtier"], "国二")
+        self.assertEqual(result["interval"], "省一至国一")
+        self.assertEqual(result["interval_tiers"], ["省一", "国二", "国一"])
 
     def test_missing_evidence_prevents_total(self):
         result = score.calculate({
@@ -53,16 +56,50 @@ class ScoreTests(unittest.TestCase):
             (83.99, "国二"),
             (78, "国二"),
             (77.99, "省一"),
-            (75, "省一"),
-            (74.99, "省二"),
-            (70, "省二"),
-            (69.99, "省三"),
+            (70, "省一"),
+            (69.99, "省二"),
+            (65, "省二"),
+            (64.99, "省三"),
             (60, "省三"),
-            (59.99, "暂不预估省级奖"),
+            (59.99, "不获奖"),
         ]
         for total, expected in cases:
             with self.subTest(total=total):
                 self.assertEqual(award.predict(total)["forecast"], expected)
+
+    def test_two_stage_categories(self):
+        cases = [
+            (84, "国奖", "国一"),
+            (78, "国奖", "国二"),
+            (70, "省奖", "省一"),
+            (65, "省奖", "省二"),
+            (60, "省奖", "省三"),
+            (59.99, "不获奖", None),
+        ]
+        for total, category, subtier in cases:
+            with self.subTest(total=total):
+                result = award.predict(total)
+                self.assertEqual(result["category"], category)
+                self.assertEqual(result["subtier"], subtier)
+
+    def test_award_sentence_is_direct_and_non_official(self):
+        result = award.predict(73)
+        self.assertEqual(
+            result["award_sentence"],
+            "获奖判断：目前大概率处于省奖范围；细分预计为省一（非官方预测）。",
+        )
+
+    def test_intervals_cover_adjacent_downside_and_upside(self):
+        cases = [
+            (84, ["国二", "国一"]),
+            (78, ["省一", "国二", "国一"]),
+            (70, ["省二", "省一", "国二"]),
+            (65, ["省三", "省二", "省一"]),
+            (60, ["不获奖", "省三", "省二"]),
+        ]
+        for total, expected in cases:
+            with self.subTest(total=total):
+                self.assertEqual(award.predict(total)["interval_tiers"], expected)
 
 
 if __name__ == "__main__":

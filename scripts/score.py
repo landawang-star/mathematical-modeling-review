@@ -46,8 +46,11 @@ def calculate(payload):
     if missing:
         return {
             "total": None,
+            "category": None,
+            "subtier": None,
             "forecast": None,
             "interval": None,
+            "interval_tiers": None,
             "unscored": missing,
             "note": "非官方诊断分；缺项不计算总分或奖项预测",
         }
@@ -57,8 +60,12 @@ def calculate(payload):
     forecast = award.predict(rounded_total)
     return {
         "total": float(rounded_total),
+        "category": forecast["category"],
+        "subtier": forecast["subtier"],
         "forecast": forecast["forecast"],
         "interval": forecast["interval"],
+        "interval_tiers": forecast["interval_tiers"],
+        "award_sentence": forecast["award_sentence"],
         "unscored": [],
         "note": "非官方诊断分与经验奖项预测；仅适用于五维均已评分的完整 CUMCM 评审",
     }

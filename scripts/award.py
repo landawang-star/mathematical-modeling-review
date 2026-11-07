@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Map the Skill's 0–100 diagnostic score to its non-official award forecast."""
+"""Map a 0–100 diagnostic score to the Skill's two-stage forecast."""
 
 import json
 import sys
@@ -7,13 +7,24 @@ from decimal import Decimal, InvalidOperation
 
 
 TIERS = (
-    (Decimal("84"), "国一", "国一"),
-    (Decimal("78"), "国二", "国二至国一"),
-    (Decimal("75"), "省一", "省一至国二"),
-    (Decimal("70"), "省二", "省二至省一"),
-    (Decimal("60"), "省三", "省三至省二"),
-    (Decimal("0"), "暂不预估省级奖", "暂不预估省级奖至省三"),
+    (Decimal("84"), "国一", "国二至国一", ("国二", "国一")),
+    (Decimal("78"), "国二", "省一至国一", ("省一", "国二", "国一")),
+    (Decimal("70"), "省一", "省二至国二", ("省二", "省一", "国二")),
+    (Decimal("65"), "省二", "省三至省一", ("省三", "省二", "省一")),
+    (Decimal("60"), "省三", "不获奖至省二", ("不获奖", "省三", "省二")),
+    (Decimal("0"), "不获奖", "不获奖至省三", ("不获奖", "省三")),
 )
+
+NATIONAL = {"国一", "国二"}
+PROVINCIAL = {"省一", "省二", "省三"}
+
+
+def category_for(tier):
+    if tier in NATIONAL:
+        return "国奖"
+    if tier in PROVINCIAL:
+        return "省奖"
+    return "不获奖"
 
 
 def predict(total):
@@ -25,12 +36,24 @@ def predict(total):
         raise ValueError("total is not a valid number") from exc
     if not value.is_finite() or not Decimal("0") <= value <= Decimal("100"):
         raise ValueError("total must be between 0 and 100")
-    for minimum, forecast, interval in TIERS:
+    for minimum, forecast, interval, interval_tiers in TIERS:
         if value >= minimum:
+            category = category_for(forecast)
             return {
                 "total": float(value),
+                "category": category,
+                "subtier": None if category == "不获奖" else forecast,
                 "forecast": forecast,
                 "interval": interval,
+                "interval_tiers": list(interval_tiers),
+                "award_sentence": (
+                    f"获奖判断：目前大概率处于{category}范围；"
+                    + (
+                        f"细分预计为{forecast}（非官方预测）。"
+                        if category != "不获奖"
+                        else "细分预计为不适用（非官方预测）。"
+                    )
+                ),
                 "note": "非官方经验预测；仅适用于五维均已评分的完整 CUMCM 评审",
             }
     raise AssertionError("unreachable")
